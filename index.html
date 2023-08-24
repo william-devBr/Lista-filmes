@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista filmes e séries</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+   
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+     
+      font-family: "Montserrat", sans-serif ;
+       background-color: #ebebeb;
+    }
+    header {
+     background: darkorange;
+     padding : 20px;
+     width: 100%;
+     position: fixed;
+     box-shadow: 0px 2px rgba(0,0,0,0.2);
+  }
+  form > .fa-film {
+    color : #808080;
+    font-size:22px;
+    align-items: center;
+    justify-content: center;
+    
+  }
+    .container {
+      display:flex;
+      flex-direction: column;
+      margin: 0 auto;
+      max-width: 1100px;
+     
+    }
+    form {
+      justify-content: space-between;
+      align-items: center;
+      max-width: 500px;
+      background-color: #fff;
+      margin : 0 auto;
+      padding:0px 10px;
+      display: flex;
+      border-radius: 5px;
+      box-shadow: 0px 2px rgba(0,0,0,0.3);
+    }
+  
+    .form-input input {
+      padding:10px;
+      border:none;
+      border-right: 1px solid #ccc;
+      font-size: 18px;
+      outline: none;
+      max-width: 250px;
+    }
+  
+    .form-input button {
+       padding:5px 10px;
+       background:none;
+       color: grey;
+       cursor:pointer;
+       border:none;
+    }
+    .result {
+       margin: 100px auto;
+   
+    }
+    .card {
+      width: 300px;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #c3c3c3;
+      margin-top:8px;
+      
+    }
+    .spin {
+     
+      width: auto;
+      margin:0 auto;
+      position:absolute;
+      top:200px;
+      justify-content: center;
+      align-items: center;
+    }
+  
+  </style>
+  
+</head>
+<body>
+
+  <header> 
+     <div class="container">
+  
+    <form action="">
+      <i class="fa-solid fa-film"></i>
+      <div class="form-input">
+        <input type="search" name="search" id="search" placeholder="Buscar filme e séries" required>
+      </div>
+      <div class="form-input">
+      
+        <button type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+     
+      </div>
+    </form>
+
+  </div>
+</header>
+
+<div class="container">
+  <div class="result">
+    <h2 style="color:gray">Busque seu filme ou série favorita</h2>
+  </div>
+</div>
+
+  <script>
+
+const form_ = document.querySelector("form");
+const listResult = document.querySelector(".result");
+
+  form_.addEventListener("submit",(ev)=> {
+    ev.preventDefault();
+    submitHandler(ev)
+  })
+const submitHandler = (form)=> {
+  
+  listResult.innerHTML = ' ';
+  const {search} = form.target;
+  
+  const response =async ()=> {
+    listResult.prepend(spin());
+    let obj = {
+      search : search.value.toString()
+   };
+   //busca a lista de filmes
+   const responseText = await fetch('api.php', {
+
+      method : "POST",
+      mode :"no-cors",
+      headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+      body : JSON.stringify(obj)
+      })
+
+      return responseText.json();
+    }
+     //recebe os dados vindo do fetch
+    response().then(data => {
+ 
+      let stat = data.status;
+      if(stat == '200'){
+        let responseData =  data.body;
+        responseData.map((res) => {
+           fetchData(res,stat); 
+       })
+      }else {
+        fetchData({},stat); 
+      }
+    
+    })
+  } 
+
+
+//cria o resultado na página
+const fetchData = (data,status)=>{
+ 
+    const {titulo,autor,ano,src} = data;
+    let card = document.createElement("div");
+        card.classList.add("card");
+    if(status == '404') {
+      card.innerHTML += `<h2> Não encontrado</h2>`;
+    }else {
+      card.innerHTML+= `<img src="${src}" width="200" />`;
+      card.innerHTML += `<h2> ${titulo}</h2>`;
+      card.innerHTML += `<div> <h4>${autor} </h4> <p> ano lançamento ${ano} </p> <div>`;
+    }
+  
+    listResult.append(card)
+    if(document.querySelector(".spin")){
+      listResult.removeChild(document.querySelector(".spin"));
+    }   
+}
+
+const spin = ()=> {
+    //cria o loading image
+    let span = document.createElement("span");
+        span.classList.add("spin");
+        span.innerHTML = '<img src="load.gif" width="45">';
+         
+        return span;
+}
+
+     </script>
+</body>
+</html>
